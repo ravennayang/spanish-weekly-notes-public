@@ -8,6 +8,8 @@ const schema = {
   properties: {
     topics: {
       type: "array",
+      minItems: 1,
+      maxItems: 5,
       items: { type: "string" },
     },
     vocabulary: {
@@ -77,6 +79,9 @@ const systemPrompt = `你是一位西班牙語老師。
 
 回傳規則：
 - 只回傳符合 JSON schema 的資料。
+- topics 必須使用繁體中文短標籤，像「餐廳點餐」「過去式動詞」「交通問路」。
+- topics 請回傳 3 到 5 個以內；每個主題 4 到 12 個中文字，不要寫成完整句子，不要使用英文，不要加編號或標點。
+- vocabulary、sentences、grammar 裡的 topic 欄位也請使用對應的繁體中文短標籤。
 - 單字請保留原形或課堂出現形式，中文翻譯要自然。
 - 句子請保留修正後的西文原句，並提供繁體中文翻譯。
 - 文法解釋要短、清楚，適合 A1-A2 學習者複習。
@@ -96,9 +101,14 @@ function extractResponseText(payload) {
 }
 
 function normalizeForClient(notes) {
+  const topicLabels = (Array.isArray(notes.topics) ? notes.topics : [notes.topic])
+    .map((topic) => String(topic || "").replace(/^[\s\-•\d.、)）]+/, "").trim().slice(0, 12))
+    .filter(Boolean)
+    .slice(0, 5);
+
   return {
-    topic: notes.topic || (Array.isArray(notes.topics) ? notes.topics.join("、") : ""),
-    topics: notes.topics || (notes.topic ? [notes.topic] : []),
+    topic: topicLabels.join("｜"),
+    topics: topicLabels,
     vocab: (notes.vocab || notes.vocabulary || []).map((item) => ({
       word: item.word || item.term || "",
       translation: item.translation || item.trans || item.meaningZh || item.meaning || "",

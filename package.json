@@ -1,0 +1,12 @@
+{
+  "name": "spanish-weekly-notes",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check api/organize.js && node --check api/config.js"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

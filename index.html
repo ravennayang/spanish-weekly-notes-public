@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西文週筆記 - 宇宙領航員控制艙</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Cyberpunk/Sci-fi look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #030712;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(217, 70, 239, 0.15) 0%, transparent 40%),
+                radial-gradient(rgba(244, 63, 94, 0.05) 1px, transparent 0);
+            background-size: 100% 100%, 100% 100%, 24px 24px;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Neon effects */
+        .neon-border-blue {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.8);
+        }
+        .neon-border-purple {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+            border: 1px solid rgba(168, 85, 247, 0.8);
+        }
+        .neon-border-pink {
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.5);
+            border: 1px solid rgba(244, 63, 94, 0.8);
+        }
+        .neon-text-green {
+            text-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+        }
+        /* Custom Scanline animation */
+        @keyframes scan {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+        .scanline::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: rgba(34, 197, 94, 0.8);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 1);
+            top: 0;
+            left: 0;
+            animation: scan 3s linear infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+        /* Hologram Grid Effect */
+        .hologram-grid {
+            background-size: 30px 30px;
+            background-image: linear-gradient(to right, rgba(34, 197, 94, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(34, 197, 94, 0.05) 1px, transparent 1px);
+        }
+        /* Smooth Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.8);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Sound & Voice Settings (Top Bar Info) -->
+    <header class="w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center z-20">
+        <div class="flex items-center gap-4">
+            <!-- Game Logo Animated -->
+            <div class="relative w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-950/50 border border-indigo-500/50 shadow-[0_0_10px_rgba(99,102,241,0.3)] overflow-hidden group">
+                <svg class="w-6 h-6 text-indigo-400 group-hover:rotate-180 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+                <div class="absolute inset-0 bg-gradient-to-t from-indigo-500/20 to-transparent animate-pulse"></div>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold font-orbitron tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-pink-500">
+                    西文週筆記 <span class="text-xs text-indigo-300 font-normal px-2 py-0.5 rounded-full bg-indigo-950 border border-indigo-800">控制艙 v2.0</span>
+                </h1>
+                <p class="text-xs text-slate-400 tracking-wider">把課堂截圖送入複習軌道，獲取學習星際燃料</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats (XP / Level) -->
+        <div class="flex items-center gap-6">
+            <!-- Synth SFX Toggle -->
+            <button onclick="toggleAudio()" id="sfxBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-700 hover:border-slate-500 bg-slate-900 transition-all text-xs font-medium">
+                <span id="sfxIcon" class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping inline-block mr-1"></span>
+                <span>音效: 開啟</span>
+            </button>
+
+            <!-- Cloud Auth -->
+            <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-lg p-2 shadow-inner">
+                <input id="authEmailInput" type="email" autocomplete="email" placeholder="email 登入同步" class="w-40 bg-slate-950 border border-slate-800 focus:border-cyan-500 text-slate-100 text-xs px-3 py-1.5 rounded-md focus:outline-none">
+                <button onclick="handleAuthAction()" id="authActionBtn" class="px-3 py-1.5 rounded-md bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-200 font-bold text-xs transition-all">
+                    登入
+                </button>
+                <span id="syncStatus" class="hidden sm:inline text-[10px] text-slate-500 font-orbitron whitespace-nowrap">本機模式</span>
+            </div>
+
+            <!-- Level / XP System -->
+            <div class="flex items-center gap-3 bg-slate-900/80 border border-slate-800 rounded-lg p-2 px-4 shadow-inner">
+                <div class="text-right">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">領航員等級</div>
+                    <div class="text-sm font-bold text-pink-400 font-orbitron" id="rankName">初階太空學徒</div>
+                </div>
+                <div class="w-12 h-12 rounded-full border-2 border-indigo-500/60 flex items-center justify-center font-orbitron text-lg font-black text-indigo-300 bg-slate-950 shadow-[0_0_10px_rgba(99,102,241,0.3)]" id="levelVal">
+                    L1
+                </div>
+                <div class="w-32 hidden sm:block">
+                    <div class="flex justify-between text-[10px] text-slate-400 font-bold font-orbitron mb-1">
+                        <span>XP: <span id="xpCurrent">0</span>/100</span>
+                        <span id="xpPercent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" id="xpProgressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row">
+
+        <!-- SIDEBAR: Mission & Week Log List -->
+        <aside class="w-full lg:w-80 bg-slate-950/40 border-r border-slate-900 p-6 flex flex-col gap-6 backdrop-blur-sm">
+            <!-- Active Mission Board -->
+            <div class="bg-gradient-to-br from-slate-900 to-indigo-950/40 rounded-xl p-4 border border-indigo-900/50 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl"></div>
+                <div class="flex items-center justify-between border-b border-indigo-900/50 pb-2 mb-3">
+                    <h3 class="font-orbitron font-bold text-xs text-indigo-300 tracking-wider flex items-center gap-2">
+                        <span class="inline-block w-2 h-2 bg-pink-500 rounded-full animate-pulse"></span>
+                        當前探險任務
+                    </h3>
+                    <span class="text-[10px] bg-indigo-950 text-indigo-400 px-2 py-0.5 rounded border border-indigo-800">每日更新</span>
+                </div>
+                <ul class="space-y-3 text-xs text-slate-300">
+                    <li class="flex items-start gap-2.5">
+                        <input type="checkbox" id="quest1" class="mt-0.5 rounded bg-slate-950 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0" checked disabled>
+                        <div>
+                            <p class="font-semibold line-through text-slate-500">登入控制艙 (獲取 10 XP)</p>
+                            <p class="text-[10px] text-slate-500">每日簽到成功</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-2.5">
+                        <input type="checkbox" id="quest2" class="mt-0.5 rounded bg-slate-950 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0" disabled>
+                        <div>
+                            <p class="font-semibold text-slate-200">上傳本週西文課截圖 (獲取 50 XP)</p>
+                            <p class="text-[10px] text-slate-400">上傳後按「AI 整理」觸發極速解析</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-2.5">
+                        <input type="checkbox" id="quest3" class="mt-0.5 rounded bg-slate-950 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0" disabled>
+                        <div>
+                            <p class="font-semibold text-slate-200">精通 5 個太空單字 (獲取 30 XP)</p>
+                            <p class="text-[10px] text-slate-400">點擊單字庫中的複習勾選按鈕</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- List of notes -->
+            <div class="flex-1 flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold tracking-widest text-slate-400 font-orbitron uppercase">複習軌道上的週記</span>
+                    <button onclick="createNewNote()" class="group text-xs text-pink-400 hover:text-pink-300 font-bold flex items-center gap-1 bg-pink-950/30 hover:bg-pink-950/60 px-2.5 py-1 rounded-md border border-pink-900/50 transition-all">
+                        <span>＋ 新增</span>
+                    </button>
+                </div>
+
+                <div class="space-y-3 overflow-y-auto max-h-[350px] lg:max-h-[calc(100vh-420px)] pr-1" id="notesList">
+                    <!-- Note card item 1 -->
+                    <div onclick="selectNote(0)" id="noteCard-0" class="cursor-pointer group relative bg-slate-900 hover:bg-slate-800 border-l-4 border-indigo-500 p-4 rounded-r-lg transition-all shadow-md neon-border-blue">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-orbitron font-bold text-slate-200" id="noteTitle-0">05/24 課堂筆記</span>
+                            <span class="text-[10px] bg-slate-950 text-slate-400 px-1.5 py-0.5 rounded border border-slate-800">軌道中</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-2" id="noteTopic-0">主題: 餐廳點餐與食物詞彙</p>
+                        <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold font-orbitron border-t border-slate-800/80 pt-2">
+                            <span><strong class="text-indigo-400" id="noteVocabCount-0">12</strong> 單字</span>
+                            <span><strong class="text-pink-400" id="noteSentenceCount-0">4</strong> 句子</span>
+                            <span class="text-emerald-400">★ 50 XP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer branding inside sidebar -->
+            <div class="text-[10px] text-slate-500 text-center border-t border-slate-900 pt-4">
+                太空控制艙終端機 © 2026<br>
+                在浩瀚星海中建立你的西班牙語網格
+            </div>
+        </aside>
+
+        <!-- MAIN AREA: Dashboard controls & Note Display -->
+        <section class="flex-1 p-6 flex flex-col gap-6">
+
+            <!-- CURRENT NOTE METADATA CONTROL -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-slate-950/60 p-4 rounded-xl border border-slate-900 backdrop-blur-md">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <span class="text-xs font-orbitron font-bold text-indigo-400 bg-indigo-950/60 px-3 py-1 rounded border border-indigo-900">筆記名稱</span>
+                    <input type="text" id="noteNameInput" value="05/24 課堂筆記" class="bg-slate-900 border border-slate-800 focus:border-indigo-500 text-slate-100 font-orbitron font-bold px-3 py-1.5 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-sm" oninput="updateCurrentNoteName(this.value)">
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="saveCurrentNote()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-slate-100 font-bold text-xs transition-all shadow-[0_0_10px_rgba(79,70,229,0.3)]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                        儲存至軌道
+                    </button>
+                    <button onclick="exportMarkdown()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold text-xs border border-indigo-900/30 transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        匯出 Markdown
+                    </button>
+                </div>
+            </div>
+
+            <!-- GAMIFIED DROPZONE (The Spaceship Core Scanner) -->
+            <div class="relative group bg-slate-950 rounded-2xl p-6 border border-slate-800 overflow-hidden hover:border-slate-700 transition-all" id="scannerContainer">
+                <!-- Background hologram effect -->
+                <div class="absolute inset-0 hologram-grid opacity-30 pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-800 rounded-xl bg-slate-950/40 hover:bg-slate-900/20 transition-all cursor-pointer" id="dropzone" onclick="triggerFileInput()">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" multiple onchange="handleImageUpload(event)">
+
+                    <!-- Futuristic Laser Scanning Interface inside dropzone -->
+                    <div class="relative w-20 h-20 mb-4 flex items-center justify-center rounded-2xl bg-slate-900 border border-slate-800 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                        <div class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-green-500/10 to-transparent animate-pulse"></div>
+                        <svg class="w-10 h-10 text-slate-400 group-hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="uploadIcon">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        </svg>
+                        <img id="imagePreview" class="absolute inset-0 w-full h-full object-cover rounded-2xl hidden" alt="Uploaded Screenshot">
+                    </div>
+
+                    <div class="text-center px-4" id="dropzoneText">
+                        <p class="font-orbitron font-black text-sm text-slate-200 tracking-wider">上傳本週課堂截圖</p>
+                        <p class="text-xs text-slate-500 mt-1">拖曳西班牙語板書、簡報圖片至此，或點擊選取多張截圖</p>
+                    </div>
+                </div>
+
+                <div id="uploadedImagesPanel" class="hidden mt-4 relative z-10 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                            <span class="text-[11px] font-orbitron font-bold tracking-widest text-emerald-300" id="uploadedImagesCount">已裝載 0 張截圖</span>
+                        </div>
+                        <button type="button" onclick="clearUploadedImages()" class="text-[10px] text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-900/70 rounded-md px-2 py-1 transition-all">
+                            清空
+                        </button>
+                    </div>
+                    <div id="uploadedImagesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+                </div>
+
+                <div class="mt-4 relative z-10 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
+                            <span class="text-[11px] font-orbitron font-bold tracking-widest text-cyan-300">OCR 文字暫存艙</span>
+                        </div>
+                        <button type="button" onclick="clearOCRText()" class="text-[10px] text-slate-400 hover:text-cyan-300 border border-slate-800 hover:border-cyan-900/70 rounded-md px-2 py-1 transition-all">
+                            清空文字
+                        </button>
+                    </div>
+                    <textarea id="ocrText" class="w-full min-h-28 bg-slate-900/80 border border-slate-800 focus:border-cyan-500 text-slate-200 text-xs px-3 py-2 rounded-lg focus:outline-none" placeholder="按「辨識截圖文字」後，多張圖片的 OCR 文字會出現在這裡；你也可以直接貼上課堂 OCR 文字再按 AI 整理。"></textarea>
+                </div>
+
+                <!-- Action Button Panels -->
+                <div class="mt-6 flex flex-wrap gap-3 justify-between items-center border-t border-slate-900 pt-4 z-10 relative">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="simulateOCR()" class="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-950 border border-cyan-800/80 text-cyan-300 font-bold text-xs transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            辨識截圖文字
+                        </button>
+                        <button onclick="organizeWeeklyNotes()" class="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-blue-950/60 hover:bg-blue-950 border border-blue-800/80 text-blue-300 font-bold text-xs transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            整理成週筆記
+                        </button>
+                        <!-- AI processing trigger (The most game-like!) -->
+                        <button onclick="triggerAIScan()" class="relative overflow-hidden flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:to-indigo-500 text-slate-100 font-bold text-xs transition-all shadow-[0_0_15px_rgba(217,70,239,0.4)] group">
+                            <!-- Button laser glow effect -->
+                            <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            <svg class="w-3.5 h-3.5 animate-spin hidden" id="aiSpinner" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <svg class="w-3.5 h-3.5" id="aiIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <span class="font-orbitron tracking-widest">AI 太空核心整理</span>
+                        </button>
+                    </div>
+
+                    <!-- Scan status report styled as ship report log -->
+                    <div class="text-xs text-slate-400 bg-slate-900/60 p-2 px-3 rounded-lg border border-slate-800/80 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                        <span id="scanStatus">已整理出 12 個可能單字、4 句例句。</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULT GRID: VOCAB, SENTENCES, TOPICS (Cockpit Screens) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- TOPIC WINDOW (Spans 4 columns or full in mobile) -->
+                <div class="lg:col-span-4 bg-slate-950/80 rounded-xl border border-slate-800 p-5 flex flex-col gap-4">
+                    <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_6px_rgba(234,179,8,0.5)]"></span>
+                        <h3 class="font-orbitron font-bold text-xs uppercase tracking-widest text-slate-300">本週航行主題</h3>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">主導航區塊 (Class Topic)</p>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-sm text-slate-200 font-bold shadow-inner flex items-center gap-2">
+                            <span class="text-xl">✈️</span>
+                            <span id="displayTopic">餐廳點餐與食物詞彙</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-end mt-4">
+                        <div class="bg-indigo-950/30 border border-indigo-900/30 p-3 rounded-lg">
+                            <h4 class="text-xs font-bold text-indigo-400 font-orbitron tracking-wide mb-1">💡 導航提示 (Pilot Tips)</h4>
+                            <p class="text-[11px] text-slate-400 leading-relaxed">西班牙文課堂筆記能自動辨識對話情境。將單字加入下方清單可累積 XP。XP 達標將啟動飛船空間跳躍！</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VOCABULARY INVENTORY (Spans 8 columns) -->
+                <div class="lg:col-span-8 bg-slate-950/80 rounded-xl border border-indigo-950 p-5 flex flex-col gap-4 neon-border-blue">
+                    <div class="flex justify-between items-center border-b border-indigo-950/50 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]"></span>
+                            <h3 class="font-orbitron font-bold text-xs uppercase tracking-widest text-slate-300">西文單字艙 (Vocabulary Inventory)</h3>
+                        </div>
+                        <span class="text-[10px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded border border-slate-800">點擊喇叭聽發音</span>
+                    </div>
+
+                    <!-- Vocab Add Interactive Input -->
+                    <div class="flex gap-2">
+                        <input type="text" id="newVocabWord" placeholder="西文單字 (如: El menú)" class="bg-slate-900/80 border border-slate-800 focus:border-indigo-500 text-slate-200 text-xs px-3 py-2 rounded-lg flex-1 focus:outline-none">
+                        <input type="text" id="newVocabTrans" placeholder="中文翻譯 (如: 菜單)" class="bg-slate-900/80 border border-slate-800 focus:border-indigo-500 text-slate-200 text-xs px-3 py-2 rounded-lg flex-1 focus:outline-none">
+                        <button onclick="addManualVocab()" class="bg-indigo-600 hover:bg-indigo-500 text-slate-100 font-bold text-xs px-4 rounded-lg transition-all">新增</button>
+                    </div>
+
+                    <!-- Vocab list container -->
+                    <div class="space-y-2 overflow-y-auto max-h-[300px] pr-1" id="vocabContainer">
+                        <!-- Loaded by JavaScript dynamically -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SENTENCE EXPEDITION LOGS -->
+            <div class="bg-slate-950/80 rounded-xl border border-pink-950 p-5 flex flex-col gap-4 neon-border-pink">
+                <div class="flex justify-between items-center border-b border-pink-950/50 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-[0_0_6px_rgba(244,63,94,0.5)]"></span>
+                        <h3 class="font-orbitron font-bold text-xs uppercase tracking-widest text-slate-300">星際句子艦橋 (Sentence Expedition)</h3>
+                    </div>
+                </div>
+
+                <!-- Sentence Add Interactive Input -->
+                <div class="flex gap-2">
+                    <input type="text" id="newSentenceSp" placeholder="西班牙文句子 (如: ¿Me trae la cuenta, por favor?)" class="bg-slate-900/80 border border-slate-800 focus:border-pink-500 text-slate-200 text-xs px-3 py-2 rounded-lg flex-1 focus:outline-none">
+                    <input type="text" id="newSentenceZh" placeholder="中文翻譯 (如: 請幫我拿帳單過來好嗎？)" class="bg-slate-900/80 border border-slate-800 focus:border-pink-500 text-slate-200 text-xs px-3 py-2 rounded-lg flex-1 focus:outline-none">
+                    <button onclick="addManualSentence()" class="bg-pink-600 hover:bg-pink-500 text-slate-100 font-bold text-xs px-4 rounded-lg transition-all">解鎖例句</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="sentencesContainer">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- GRAMMAR NAVIGATION LOGS -->
+            <div class="bg-slate-950/80 rounded-xl border border-emerald-950 p-5 flex flex-col gap-4">
+                <div class="flex justify-between items-center border-b border-emerald-950/50 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
+                        <h3 class="font-orbitron font-bold text-xs uppercase tracking-widest text-slate-300">文法導航艙 (Grammar Navigation)</h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="grammarContainer">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Custom Dialog / Modal for Saving & Success Messages -->
+    <div id="customModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 border border-indigo-500/80 rounded-2xl p-6 w-full max-w-sm mx-4 neon-border-blue relative">
+            <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-20 h-20 bg-slate-900 border-2 border-indigo-500 rounded-full flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(99,102,241,0.5)]">
+                🚀
+            </div>
+            <div class="text-center mt-8">
+                <h3 class="font-orbitron font-bold text-lg text-slate-100" id="modalTitle">航行紀錄儲存</h3>
+                <p class="text-sm text-slate-400 mt-2" id="modalContent">您本週的學習成果已經永久加密保存在飛船資料庫中，已為您轉換為星際燃料！</p>
+                <button onclick="closeModal()" class="mt-6 w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-orbitron font-bold text-xs tracking-widest text-slate-100 transition-all">
+                    關閉控制艙
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="/api/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Script Section with Gamified Engine and API Integration -->
+    <script>
+        // Game-state setup
+        let audioEnabled = true;
+        let userXP = 0;
+        let userLevel = 1;
+        let selectedNoteIndex = 0;
+        let uploadedImages = [];
+        let currentUploadedImageBase64 = null;
+        let latestOCRText = "";
+        const STORAGE_KEY = "spanish-space-notes-v2";
+        const SUPABASE_URL = window.APP_CONFIG?.supabaseUrl || "";
+        const SUPABASE_ANON_KEY = window.APP_CONFIG?.supabaseAnonKey || "";
+        const supabaseClient = SUPABASE_URL && SUPABASE_ANON_KEY
+            ? window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            : null;
+        let currentUser = null;
+        let syncTimer = null;
+        let isLoadingCloudNotes = false;
+        let hasLocalSavedNotes = false;
+        let authCooldownTimer = null;
+
+        // Custom Sound Generator using Web Audio API (Retro Synth SFX)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSynthSound(type) {
+            if (!audioEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    // Quick retro high-beep
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'success') {
+                    // Retro game power-up chime
+                    osc.type = 'triangle';
+                    const now = audioCtx.currentTime;
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start();
+                    osc.stop(now + 0.5);
+                } else if (type === 'scan') {
+                    // Laser scanning sound sweep
+                    osc.type = 'sawtooth';
+                    const now = audioCtx.currentTime;
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.linearRampToValueAtTime(1500, now + 1.5);
+                    osc.frequency.linearRampToValueAtTime(300, now + 3);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 3);
+                    osc.start();
+                    osc.stop(now + 3);
+                } else if (type === 'levelup') {
+                    // Epic Sci-fi Level up melody
+                    osc.type = 'sine';
+                    const now = audioCtx.currentTime;
+                    const notes = [440, 554, 659, 880, 1108, 1318, 1760];
+                    notes.forEach((freq, idx) => {
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    });
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                    osc.start();
+                    osc.stop(now + 0.8);
+                }
+            } catch (e) {
+                console.warn('Audio synthesis warning:', e);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('sfxBtn');
+            const icon = document.getElementById('sfxIcon');
+            if (audioEnabled) {
+                btn.innerHTML = `<span id="sfxIcon" class="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping inline-block mr-1"></span><span>音效: 開啟</span>`;
+                playSynthSound('click');
+            } else {
+                btn.innerHTML = `<span id="sfxIcon" class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block mr-1"></span><span>音效: 關閉</span>`;
+            }
+        }
+
+        // Speech synthesis for Spanish words
+        function speakSpanish(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES'; // Authentic European Spanish Voice
+                utterance.rate = 0.85; // slightly slower for learners
+                window.speechSynthesis.speak(utterance);
+                playSynthSound('click');
+            } else {
+                console.warn('Speech synthesis not supported in this browser.');
+            }
+        }
+
+        // Mock Initial Database Structure
+        let notesData = [
+            {
+                name: "05/24 課堂筆記",
+                topic: "餐廳點餐與食物詞彙",
+                vocab: [
+                    { word: "el menú", trans: "菜單", mastered: true },
+                    { word: "el camarero", trans: "男服務生", mastered: false },
+                    { word: "la cuenta, por favor", trans: "請結帳", mastered: true },
+                    { word: "delicioso", trans: "美味的", mastered: false },
+                    { word: "el agua sin gas", trans: "不含氣泡的水", mastered: false },
+                    { word: "buen provecho", trans: "祝用餐愉快", mastered: false }
+                ],
+                sentences: [
+                    { spanish: "¿Qué nos recomienda para cenar?", chinese: "晚餐您推薦我們吃什麼？" },
+                    { spanish: "De primero quiero una ensalada mixta.", chinese: "第一道菜我想要綜合沙拉。" },
+                    { spanish: "La sopa está un poco fría.", chinese: "這碗湯有點冷。" },
+                    { spanish: "La cuenta, por favor, cuando pueda.", chinese: "可以的話請幫我結帳。" }
+                ],
+                grammar: [
+                    { title: "用 querer 表達想要", explanation: "quiero + 名詞 / quiero + 動詞原形，可用在點餐與表達需求。" }
+                ]
+            }
+        ];
+
+        function saveNotesToStorage(options = {}) {
+            const { cloud = true } = options;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                notesData,
+                selectedNoteIndex,
+                userXP,
+                userLevel
+            }));
+            if (cloud) scheduleCloudSave();
+        }
+
+        function loadNotesFromStorage() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+                if (!saved || !Array.isArray(saved.notesData) || saved.notesData.length === 0) return;
+                hasLocalSavedNotes = true;
+
+                notesData = saved.notesData.map(note => ({
+                    id: note.id || null,
+                    name: note.name || "未命名筆記",
+                    topic: note.topic || "未指定星區主題",
+                    vocab: Array.isArray(note.vocab) ? note.vocab : [],
+                    sentences: Array.isArray(note.sentences) ? note.sentences : [],
+                    grammar: Array.isArray(note.grammar) ? note.grammar : [],
+                    rawOCRText: note.rawOCRText || ""
+                }));
+                selectedNoteIndex = Math.min(saved.selectedNoteIndex || 0, notesData.length - 1);
+                userXP = saved.userXP || 0;
+                userLevel = saved.userLevel || 1;
+            } catch (error) {
+                console.warn("Failed to load saved notes.", error);
+            }
+        }
+
+        function setSyncStatus(message, tone = "muted") {
+            const el = document.getElementById('syncStatus');
+            if (!el) return;
+            const colors = {
+                muted: "text-slate-500",
+                ok: "text-emerald-300",
+                active: "text-cyan-300",
+                warn: "text-amber-300",
+                error: "text-rose-300"
+            };
+            el.className = `hidden sm:inline text-[10px] ${colors[tone] || colors.muted} font-orbitron whitespace-nowrap`;
+            el.innerText = message;
+        }
+
+        function normalizeNote(note) {
+            return {
+                id: note.id || null,
+                name: note.name || note.title || "未命名筆記",
+                topic: note.topic || "未指定星區主題",
+                vocab: Array.isArray(note.vocab) ? note.vocab : [],
+                sentences: Array.isArray(note.sentences) ? note.sentences : [],
+                grammar: Array.isArray(note.grammar) ? note.grammar : [],
+                rawOCRText: note.rawOCRText || note.raw_ocr_text || ""
+            };
+        }
+
+        function noteFromRow(row) {
+            return normalizeNote({
+                id: row.id,
+                name: row.title,
+                topic: row.topic,
+                vocab: row.vocab,
+                sentences: row.sentences,
+                grammar: row.grammar,
+                rawOCRText: row.raw_ocr_text
+            });
+        }
+
+        function noteToRow(note) {
+            return {
+                title: note.name || "未命名筆記",
+                topic: note.topic || "",
+                vocab: note.vocab || [],
+                sentences: note.sentences || [],
+                grammar: note.grammar || [],
+                raw_ocr_text: note.rawOCRText || null,
+                updated_at: new Date().toISOString()
+            };
+        }
+
+        async function initCloudAuth() {
+            if (!supabaseClient) {
+                setSyncStatus("Supabase 未載入", "error");
+                return;
+            }
+
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) {
+                setSyncStatus("登入狀態讀取失敗", "error");
+                console.warn("Supabase session error", error);
+                return;
+            }
+
+            currentUser = data.session?.user || null;
+            updateAuthUI();
+            if (currentUser) await loadNotesFromCloud();
+
+            supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+                currentUser = session?.user || null;
+                updateAuthUI();
+                if (currentUser) {
+                    await loadNotesFromCloud();
+                } else {
+                    setSyncStatus("本機模式", "muted");
+                }
+            });
+        }
+
+        function updateAuthUI() {
+            const input = document.getElementById('authEmailInput');
+            const button = document.getElementById('authActionBtn');
+            if (!input || !button) return;
+
+            if (currentUser) {
+                input.value = currentUser.email || "";
+                input.disabled = true;
+                button.innerText = "登出";
+                setSyncStatus("雲端已連線", "ok");
+            } else {
+                input.disabled = false;
+                button.innerText = "登入";
+                setSyncStatus("本機模式", "muted");
+            }
+        }
+
+        function startAuthCooldown(seconds = 60) {
+            const button = document.getElementById('authActionBtn');
+            if (!button) return;
+
+            clearInterval(authCooldownTimer);
+            let remaining = seconds;
+            button.disabled = true;
+            button.classList.add('opacity-60', 'cursor-not-allowed');
+            button.innerText = `等 ${remaining}s`;
+
+            authCooldownTimer = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearInterval(authCooldownTimer);
+                    button.disabled = false;
+                    button.classList.remove('opacity-60', 'cursor-not-allowed');
+                    button.innerText = currentUser ? "登出" : "登入";
+                    return;
+                }
+                button.innerText = `等 ${remaining}s`;
+            }, 1000);
+        }
+
+        async function handleAuthAction() {
+            if (!supabaseClient) {
+                showModal("雲端模組未載入", "請確認網路可以連到 Supabase CDN。");
+                return;
+            }
+
+            if (currentUser) {
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                updateAuthUI();
+                showModal("已登出", "目前回到本機模式，這台瀏覽器仍會保留本機備份。");
+                return;
+            }
+
+            const email = document.getElementById('authEmailInput').value.trim();
+            if (!email) {
+                showModal("請輸入 Email", "輸入你的 email 後，我會寄出 Supabase magic link 登入信。");
+                return;
+            }
+
+            setSyncStatus("寄送登入信...", "active");
+            const { error } = await supabaseClient.auth.signInWithOtp({
+                email,
+                options: { emailRedirectTo: window.location.origin }
+            });
+
+            if (error) {
+                setSyncStatus("登入信失敗", "error");
+                showModal("登入信寄送失敗", `${error.message}\n\n如果看到 email rate limit exceeded，請等 60 秒到幾分鐘後再試。Supabase 會限制短時間重複寄送 magic link。`);
+                startAuthCooldown(60);
+                return;
+            }
+
+            setSyncStatus("請收信登入", "warn");
+            startAuthCooldown(60);
+            showModal("登入信已寄出", `請到 ${email} 收信，點 magic link 後就會回到這個 app，並開始雲端同步。`);
+        }
+
+        async function loadNotesFromCloud() {
+            if (!supabaseClient || !currentUser) return;
+            isLoadingCloudNotes = true;
+            setSyncStatus("讀取雲端...", "active");
+
+            const { data, error } = await supabaseClient
+                .from("notes")
+                .select("id,title,topic,vocab,sentences,grammar,raw_ocr_text,created_at,updated_at")
+                .order("created_at", { ascending: false });
+
+            isLoadingCloudNotes = false;
+            if (error) {
+                setSyncStatus("雲端讀取失敗", "error");
+                showModal("雲端讀取失敗", error.message);
+                return;
+            }
+
+            if (data.length > 0) {
+                notesData = data.map(noteFromRow);
+                selectedNoteIndex = Math.min(selectedNoteIndex, notesData.length - 1);
+            } else if (hasLocalSavedNotes) {
+                await migrateLocalNotesToCloud();
+            }
+
+            renderNotesList();
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage({ cloud: false });
+            setSyncStatus("雲端已同步", "ok");
+        }
+
+        async function migrateLocalNotesToCloud() {
+            if (!supabaseClient || !currentUser || notesData.length === 0) return;
+            setSyncStatus("首次上傳...", "active");
+
+            const rows = notesData.map(note => ({
+                ...noteToRow(note),
+                user_id: currentUser.id
+            }));
+            const { data, error } = await supabaseClient
+                .from("notes")
+                .insert(rows)
+                .select("id,title,topic,vocab,sentences,grammar,raw_ocr_text,created_at,updated_at");
+
+            if (error) {
+                setSyncStatus("首次上傳失敗", "error");
+                showModal("首次上傳失敗", error.message);
+                return;
+            }
+
+            notesData = data.map(noteFromRow);
+            selectedNoteIndex = 0;
+        }
+
+        function scheduleCloudSave(noteIndex = selectedNoteIndex) {
+            if (!currentUser || isLoadingCloudNotes) return;
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(() => saveCurrentNoteToCloud(noteIndex), 700);
+        }
+
+        async function saveCurrentNoteToCloud(noteIndex = selectedNoteIndex) {
+            if (!supabaseClient || !currentUser) return;
+            const note = notesData[noteIndex];
+            if (!note) return;
+
+            setSyncStatus("同步中...", "active");
+            const row = {
+                ...noteToRow(note),
+                user_id: currentUser.id
+            };
+
+            let result;
+            if (note.id) {
+                result = await supabaseClient
+                    .from("notes")
+                    .update(row)
+                    .eq("id", note.id)
+                    .select("id,title,topic,vocab,sentences,grammar,raw_ocr_text,created_at,updated_at")
+                    .single();
+            } else {
+                result = await supabaseClient
+                    .from("notes")
+                    .insert(row)
+                    .select("id,title,topic,vocab,sentences,grammar,raw_ocr_text,created_at,updated_at")
+                    .single();
+            }
+
+            if (result.error) {
+                setSyncStatus(`同步失敗：${result.error.message}`, "error");
+                console.warn("Supabase save error", result.error);
+                showModal("雲端同步失敗", `${result.error.message}\n\n請先確認你已登入，Supabase 的 notes table 與 RLS policy 已建立，並且 Vercel/Supabase 網址設定正確。`);
+                return;
+            }
+
+            const targetIndex = note.id
+                ? notesData.findIndex((item) => item.id === note.id)
+                : notesData.indexOf(note);
+            if (targetIndex === -1) {
+                setSyncStatus("雲端已同步，重新整理後更新", "ok");
+                return;
+            }
+
+            notesData[targetIndex] = noteFromRow(result.data);
+            saveNotesToStorage({ cloud: false });
+            renderNotesList();
+            if (targetIndex === selectedNoteIndex) renderCurrentNote();
+            setSyncStatus("雲端已同步", "ok");
+        }
+
+        // XP System & gamified progress
+        function addXP(amount) {
+            userXP += amount;
+            if (userXP >= 100) {
+                userLevel += 1;
+                userXP -= 100;
+                playSynthSound('levelup');
+                showModal("🎖️ 領航員階級提升！", `恭喜您突破了大氣層！目前階級晉升為【Lv.${userLevel} ${getRankName(userLevel)}】！解鎖了更多的星際燃力槽！`);
+            } else {
+                playSynthSound('success');
+            }
+            updateXPUI();
+        }
+
+        function getRankName(level) {
+            const ranks = [
+                "初階太空學徒",
+                "星系航行探索家",
+                "西班牙語大副",
+                "超空間語言艦長",
+                "銀河多語大師",
+                "全知星域總督"
+            ];
+            return ranks[Math.min(level - 1, ranks.length - 1)];
+        }
+
+        function updateXPUI() {
+            document.getElementById('xpCurrent').innerText = userXP;
+            document.getElementById('xpPercent').innerText = `${userXP}%`;
+            document.getElementById('xpProgressBar').style.width = `${userXP}%`;
+            document.getElementById('levelVal').innerText = `L${userLevel}`;
+            document.getElementById('rankName').innerText = getRankName(userLevel);
+        }
+
+        // Update active note count badge dynamically
+        function updateNoteMetadataBadges(index) {
+            const note = notesData[index];
+            if (!note || !document.getElementById(`noteCard-${index}`)) return;
+            const activeVocab = note.vocab.length;
+            const activeSentences = note.sentences.length;
+
+            document.getElementById(`noteVocabCount-${index}`).innerText = activeVocab;
+            document.getElementById(`noteSentenceCount-${index}`).innerText = activeSentences;
+            document.getElementById(`noteTitle-${index}`).innerText = note.name;
+            document.getElementById(`noteTopic-${index}`).innerText = `主題: ${note.topic}`;
+        }
+
+        function renderNotesList() {
+            const list = document.getElementById('notesList');
+            list.innerHTML = '';
+            notesData.forEach((note, index) => {
+                const card = document.createElement('div');
+                card.id = `noteCard-${index}`;
+                card.onclick = () => selectNote(index);
+                card.className = index === selectedNoteIndex
+                    ? "cursor-pointer group relative bg-slate-900 hover:bg-slate-800 border-l-4 border-indigo-500 p-4 rounded-r-lg transition-all shadow-md neon-border-blue"
+                    : "cursor-pointer group relative bg-slate-900/60 hover:bg-slate-800 border-l-4 border-slate-700 p-4 rounded-r-lg transition-all shadow-md";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-orbitron font-bold text-slate-200" id="noteTitle-${index}">${note.name}</span>
+                        <span class="text-[10px] bg-slate-950 text-slate-400 px-1.5 py-0.5 rounded border border-slate-800">${index === selectedNoteIndex ? '軌道中' : '準備中'}</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2" id="noteTopic-${index}">主題: ${note.topic}</p>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold font-orbitron border-t border-slate-800/80 pt-2">
+                        <span><strong class="text-indigo-400" id="noteVocabCount-${index}">${note.vocab.length}</strong> 單字</span>
+                        <span><strong class="text-pink-400" id="noteSentenceCount-${index}">${note.sentences.length}</strong> 句子</span>
+                        <span class="text-emerald-400">★ ${index === selectedNoteIndex ? 50 : 0} XP</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // Initialize display
+        function renderCurrentNote() {
+            const note = notesData[selectedNoteIndex];
+            if (!note) return;
+
+            // Header input
+            document.getElementById('noteNameInput').value = note.name;
+            document.getElementById('displayTopic').innerText = note.topic;
+            latestOCRText = note.rawOCRText || "";
+            const ocrTextArea = document.getElementById('ocrText');
+            if (ocrTextArea) ocrTextArea.value = latestOCRText;
+
+            // Render Vocabulary
+            const vocabContainer = document.getElementById('vocabContainer');
+            vocabContainer.innerHTML = '';
+            note.vocab.forEach((item, index) => {
+                vocabContainer.appendChild(createVocabCard(item, index));
+            });
+
+            // Render Sentences
+            const sentencesContainer = document.getElementById('sentencesContainer');
+            sentencesContainer.innerHTML = '';
+            note.sentences.forEach((item, index) => {
+                sentencesContainer.appendChild(createSentenceCard(item, index));
+            });
+
+            // Render Grammar
+            const grammarContainer = document.getElementById('grammarContainer');
+            grammarContainer.innerHTML = '';
+            (note.grammar || []).forEach((item, index) => {
+                grammarContainer.appendChild(createGrammarCard(item, index));
+            });
+
+            // Update stats string
+            document.getElementById('scanStatus').innerText = `已整理出 ${note.vocab.length} 個單字、${note.sentences.length} 句例句、${(note.grammar || []).length} 個文法重點。`;
+        }
+
+        function createVocabCard(item, idx) {
+            const div = document.createElement('div');
+            div.className = `flex justify-between items-center bg-slate-900 border ${item.mastered ? 'border-emerald-950 bg-emerald-950/10' : 'border-slate-800'} p-3 rounded-xl transition-all hover:bg-slate-800/80 group`;
+            div.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleVocabMastery(${idx})" class="w-6 h-6 rounded-lg border ${item.mastered ? 'bg-emerald-500 border-emerald-400' : 'border-slate-700 bg-slate-950 hover:border-slate-500'} flex items-center justify-center transition-all">
+                        ${item.mastered ? '✓' : ''}
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-orbitron font-bold text-slate-100 ${item.mastered ? 'line-through text-slate-500' : ''}">${item.word}</span>
+                            <button onclick="speakSpanish('${item.word.replace("'", "\\'")}')" class="text-xs text-slate-500 hover:text-indigo-400 transition-colors">
+                                🔊
+                            </button>
+                        </div>
+                        <span class="text-xs text-slate-400">${item.trans}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-orbitron font-bold bg-slate-950 text-indigo-400 px-2 py-0.5 rounded border border-slate-800">+10 XP</span>
+                    <button onclick="deleteVocab(${idx})" class="text-xs text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity">🗑️</button>
+                </div>
+            `;
+            return div;
+        }
+
+        function createGrammarCard(item, idx) {
+            const div = document.createElement('div');
+            div.className = "bg-slate-900 border border-emerald-950/80 p-4 rounded-xl relative group hover:border-emerald-800/60 transition-all shadow-inner";
+            div.innerHTML = `
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest font-orbitron block mb-1">文法座標 ${idx + 1}</span>
+                <p class="font-bold text-slate-100 text-sm mb-1">${item.title || '文法重點'}</p>
+                <p class="text-xs text-slate-400 leading-relaxed">${item.explanation || ''}</p>
+            `;
+            return div;
+        }
+
+        function createSentenceCard(item, idx) {
+            const div = document.createElement('div');
+            div.className = "bg-slate-900 border border-slate-800/80 p-4 rounded-xl relative group hover:border-pink-900/40 transition-all shadow-inner";
+            div.innerHTML = `
+                <div class="absolute right-3 top-3 flex gap-2">
+                    <button onclick="speakSpanish('${item.spanish.replace("'", "\\'")}')" class="text-xs text-slate-500 hover:text-pink-400 transition-colors">🔊 播放</button>
+                    <button onclick="deleteSentence(${idx})" class="text-xs text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity">🗑️</button>
+                </div>
+                <span class="text-[10px] font-bold text-pink-400 uppercase tracking-widest font-orbitron block mb-1">對白艦橋</span>
+                <p class="font-bold text-slate-100 text-sm mb-1">${item.spanish}</p>
+                <p class="text-xs text-slate-400">${item.chinese}</p>
+            `;
+            return div;
+        }
+
+        // Toggle state functions
+        function toggleVocabMastery(idx) {
+            const item = notesData[selectedNoteIndex].vocab[idx];
+            item.mastered = !item.mastered;
+            if (item.mastered) {
+                addXP(10);
+                document.getElementById('quest3').checked = checkVocabQuest();
+            } else {
+                playSynthSound('click');
+            }
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage();
+        }
+
+        function checkVocabQuest() {
+            const masteredCount = notesData[selectedNoteIndex].vocab.filter(v => v.mastered).length;
+            return masteredCount >= 5;
+        }
+
+        function deleteVocab(idx) {
+            playSynthSound('click');
+            notesData[selectedNoteIndex].vocab.splice(idx, 1);
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage();
+        }
+
+        function deleteSentence(idx) {
+            playSynthSound('click');
+            notesData[selectedNoteIndex].sentences.splice(idx, 1);
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage();
+        }
+
+        // Add interactive vocab manually
+        function addManualVocab() {
+            const wordInput = document.getElementById('newVocabWord');
+            const transInput = document.getElementById('newVocabTrans');
+            const word = wordInput.value.trim();
+            const trans = transInput.value.trim();
+
+            if (!word || !trans) return;
+
+            playSynthSound('click');
+            notesData[selectedNoteIndex].vocab.unshift({
+                word: word,
+                trans: trans,
+                mastered: false
+            });
+
+            wordInput.value = '';
+            transInput.value = '';
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage();
+        }
+
+        // Add interactive sentence manually
+        function addManualSentence() {
+            const spInput = document.getElementById('newSentenceSp');
+            const zhInput = document.getElementById('newSentenceZh');
+            const sp = spInput.value.trim();
+            const zh = zhInput.value.trim();
+
+            if (!sp || !zh) return;
+
+            playSynthSound('success');
+            notesData[selectedNoteIndex].sentences.unshift({
+                spanish: sp,
+                chinese: zh
+            });
+
+            spInput.value = '';
+            zhInput.value = '';
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage();
+        }
+
+        function updateCurrentNoteName(name) {
+            notesData[selectedNoteIndex].name = name || "未命名筆記";
+            updateNoteMetadataBadges(selectedNoteIndex);
+            saveNotesToStorage();
+        }
+
+        // Create New Empty Note
+        function createNewNote() {
+            playSynthSound('success');
+            const newIndex = notesData.length;
+            const newNote = {
+                id: null,
+                name: `週記 ${newIndex + 1} (太空航行)`,
+                topic: "未指定星區主題",
+                vocab: [],
+                sentences: [],
+                grammar: [],
+                rawOCRText: ""
+            };
+            notesData.push(newNote);
+            renderNotesList();
+            selectNote(newIndex);
+            saveNotesToStorage();
+        }
+
+        // Switch notes
+        function selectNote(index) {
+            // Deselect previous
+            const prevCard = document.getElementById(`noteCard-${selectedNoteIndex}`);
+            if (prevCard) {
+                prevCard.className = "cursor-pointer group relative bg-slate-900/60 hover:bg-slate-800 border-l-4 border-slate-700 p-4 rounded-r-lg transition-all shadow-md";
+                prevCard.classList.remove("neon-border-blue");
+            }
+
+            selectedNoteIndex = index;
+
+            // Select new
+            const activeCard = document.getElementById(`noteCard-${index}`);
+            if (activeCard) {
+                activeCard.className = "cursor-pointer group relative bg-slate-900 hover:bg-slate-800 border-l-4 border-indigo-500 p-4 rounded-r-lg transition-all shadow-md neon-border-blue";
+            }
+
+            playSynthSound('click');
+            renderCurrentNote();
+            renderNotesList();
+            saveNotesToStorage({ cloud: false });
+        }
+
+        // Drag and Drop & Image Upload Handlers
+        function triggerFileInput() {
+            document.getElementById('fileInput').click();
+        }
+
+        function renderUploadedImages() {
+            const panel = document.getElementById('uploadedImagesPanel');
+            const count = document.getElementById('uploadedImagesCount');
+            const list = document.getElementById('uploadedImagesList');
+            const preview = document.getElementById('imagePreview');
+            const uploadIcon = document.getElementById('uploadIcon');
+
+            if (uploadedImages.length === 0) {
+                panel.classList.add('hidden');
+                preview.classList.add('hidden');
+                uploadIcon.classList.remove('hidden');
+                document.getElementById('dropzoneText').innerHTML = `
+                    <p class="font-orbitron font-black text-sm text-slate-200 tracking-wider">上傳本週課堂截圖</p>
+                    <p class="text-xs text-slate-500 mt-1">拖曳西班牙語板書、簡報圖片至此，或點擊選取多張截圖</p>
+                `;
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            count.innerText = `已裝載 ${uploadedImages.length} 張截圖`;
+            preview.src = uploadedImages[uploadedImages.length - 1].dataUrl;
+            preview.classList.remove('hidden');
+            uploadIcon.classList.add('hidden');
+            document.getElementById('dropzoneText').innerHTML = `
+                <p class="font-orbitron font-black text-xs text-emerald-400 tracking-wider">★ ${uploadedImages.length} 張課堂截圖就緒 ★</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">可繼續追加上傳，AI 整理會使用 OCR 後文字</p>
+            `;
+
+            list.innerHTML = uploadedImages.map((image, index) => `
+                <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-lg p-2 min-w-0">
+                    <img src="${image.dataUrl}" alt="${image.name}" class="w-9 h-9 rounded-md object-cover border border-slate-700 shrink-0">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] text-slate-200 truncate">${index + 1}. ${image.name}</p>
+                        <p class="text-[10px] text-slate-500">${formatFileSize(image.size)}</p>
+                    </div>
+                    <button type="button" onclick="removeUploadedImage(${index})" class="text-[10px] text-slate-500 hover:text-rose-300 px-1">移除</button>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(size) {
+            if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
+            return `${(size / 1024 / 1024).toFixed(1)} MB`;
+        }
+
+        function removeUploadedImage(index) {
+            uploadedImages.splice(index, 1);
+            currentUploadedImageBase64 = uploadedImages.at(-1)?.dataUrl || null;
+            renderUploadedImages();
+        }
+
+        function clearUploadedImages() {
+            uploadedImages = [];
+            currentUploadedImageBase64 = null;
+            renderUploadedImages();
+            playSynthSound('click');
+        }
+
+        function clearOCRText() {
+            latestOCRText = "";
+            document.getElementById('ocrText').value = "";
+            document.getElementById('scanStatus').innerText = "OCR 文字已清空。";
+            playSynthSound('click');
+        }
+
+        function handleImageUpload(e) {
+            const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            let loadedCount = 0;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedImages.push({
+                        name: file.name,
+                        size: file.size,
+                        dataUrl: event.target.result
+                    });
+                    currentUploadedImageBase64 = event.target.result;
+                    loadedCount += 1;
+                    if (loadedCount === files.length) {
+                        renderUploadedImages();
+                        document.getElementById('quest2').checked = true;
+                        document.getElementById('scanStatus').innerText = `已裝載 ${uploadedImages.length} 張截圖。`;
+                        addXP(20);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            e.target.value = '';
+        }
+
+        // Save note modal trigger
+        async function saveCurrentNote() {
+            saveNotesToStorage({ cloud: false });
+            if (currentUser) await saveCurrentNoteToCloud();
+            const target = currentUser ? "雲端資料庫與這台瀏覽器" : "這台電腦的瀏覽器";
+            showModal("💾 週記已儲存", `成功將【${notesData[selectedNoteIndex].name}】保存在${target}中。`);
+        }
+
+        // Export as beautiful markdown
+        function exportMarkdown() {
+            const note = notesData[selectedNoteIndex];
+            let md = `# 西班牙文太空筆記 - ${note.name}\n`;
+            md += `* 航行主題：${note.topic}\n\n`;
+            md += `## 🪐 西文單字艙 (Vocabulary)\n`;
+            note.vocab.forEach(v => {
+                md += `- **${v.word}** : ${v.trans} [${v.mastered ? '已精通' : '學習中'}]\n`;
+            });
+            md += `\n## 🚀 星際句子艦橋 (Sentences)\n`;
+            note.sentences.forEach(s => {
+                md += `- **${s.spanish}**\n  _${s.chinese}_\n`;
+            });
+            if ((note.grammar || []).length > 0) {
+                md += `\n## 🛰️ 文法導航艙 (Grammar)\n`;
+                note.grammar.forEach(g => {
+                    md += `- **${g.title}**\n  ${g.explanation}\n`;
+                });
+            }
+
+            // Trigger file download
+            const blob = new Blob([md], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${note.name.replace(/\s+/g, '_')}_notes.md`;
+            a.click();
+            playSynthSound('success');
+        }
+
+        async function simulateOCR() {
+            playSynthSound('scan');
+            const scanner = document.getElementById('scannerContainer');
+            scanner.classList.add('scanline');
+
+            try {
+                if (uploadedImages.length === 0) {
+                    throw new Error("請先上傳至少一張截圖。");
+                }
+                if (!window.Tesseract) {
+                    throw new Error("OCR 模組尚未載入，請確認網路可以連到 Tesseract CDN。");
+                }
+
+                const chunks = [];
+                for (let index = 0; index < uploadedImages.length; index += 1) {
+                    document.getElementById('scanStatus').innerText = `📡 正在 OCR 第 ${index + 1} / ${uploadedImages.length} 張截圖...`;
+                    const result = await window.Tesseract.recognize(uploadedImages[index].dataUrl, 'spa+eng+chi_tra');
+                    const text = result.data.text.trim();
+                    if (text) {
+                        chunks.push(`--- ${uploadedImages[index].name} ---\n${text}`);
+                    }
+                }
+
+                latestOCRText = chunks.join('\n\n').trim();
+                document.getElementById('ocrText').value = latestOCRText;
+                document.getElementById('scanStatus').innerText = `✓ OCR 完成：已解析 ${uploadedImages.length} 張截圖，${latestOCRText.length} 個字元。`;
+                addXP(10);
+            } catch (error) {
+                document.getElementById('scanStatus').innerText = `⚠️ ${error.message}`;
+                showModal("📡 OCR 解析失敗", error.message);
+            } finally {
+                scanner.classList.remove('scanline');
+            }
+        }
+
+        function organizeWeeklyNotes() {
+            playSynthSound('success');
+            showModal("📊 太空自動排版", "已將您零散的筆記單字，按詞性及會話使用頻率重新建立索引網格！");
+        }
+
+        function getOCRTextForOrganization() {
+            const explicitOCRInput = document.getElementById('ocrText') || document.getElementById('rawText');
+            if (explicitOCRInput?.value?.trim()) {
+                return explicitOCRInput.value.trim();
+            }
+
+            if (latestOCRText.trim()) {
+                return latestOCRText.trim();
+            }
+
+            return "";
+        }
+
+        function normalizeOrganizedPayload(payload) {
+            const topic = payload.topic || (Array.isArray(payload.topics) ? payload.topics.join('、') : '星際冒險詞彙');
+            const vocabulary = payload.vocab || payload.vocabulary || [];
+            const sentences = payload.sentences || [];
+
+            return {
+                topic,
+                vocab: vocabulary.map(v => ({
+                    word: v.word || v.term || '',
+                    trans: v.translation || v.trans || v.meaningZh || v.meaning || '',
+                    mastered: Boolean(v.mastered)
+                })).filter(v => v.word || v.trans),
+                sentences: sentences.map(s => ({
+                    spanish: s.spanish || s.text || '',
+                    chinese: s.chinese || s.translation || ''
+                })).filter(s => s.spanish || s.chinese),
+                grammar: (payload.grammar || []).map(g => ({
+                    title: g.title || '',
+                    explanation: g.explanation || ''
+                })).filter(g => g.title || g.explanation)
+            };
+        }
+
+        // --- LOCAL AI ORGANIZATION API ---
+        async function triggerAIScan() {
+            const scanner = document.getElementById('scannerContainer');
+
+            // Start visual & audio scanning sequence
+            playSynthSound('scan');
+            scanner.classList.add('scanline');
+            document.getElementById('aiSpinner').classList.remove('hidden');
+            document.getElementById('aiIcon').classList.add('hidden');
+            document.getElementById('scanStatus').innerText = "⚡ 正在送往本地 AI 整理核心...";
+
+            try {
+                if (!getOCRTextForOrganization() && uploadedImages.length > 0) {
+                    await simulateOCR();
+                }
+
+                const ocrText = getOCRTextForOrganization();
+                if (!ocrText) {
+                    throw new Error("請先完成 OCR，或在 OCR 文字暫存艙貼上課堂文字。");
+                }
+
+                const { data: sessionData } = await supabaseClient.auth.getSession();
+                const accessToken = sessionData.session?.access_token;
+                if (!accessToken) {
+                    throw new Error("請先用右上角 Email 登入，登入後才能使用 AI 整理。");
+                }
+
+                const response = await fetch('/api/organize', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ocrText })
+                });
+
+                const payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload.error || "本地 AI 整理失敗。");
+                }
+
+                const parsed = normalizeOrganizedPayload(payload);
+                const note = notesData[selectedNoteIndex];
+                note.topic = parsed.topic;
+                note.vocab = parsed.vocab;
+                note.sentences = parsed.sentences;
+                note.grammar = parsed.grammar;
+                note.rawOCRText = ocrText;
+
+                renderCurrentNote();
+                updateNoteMetadataBadges(selectedNoteIndex);
+                saveNotesToStorage();
+                addXP(50);
+
+                document.getElementById('scanStatus').innerText = "✓ 本地 AI 整理完成！筆記已更新。";
+                showModal("🛸 星際燃料合成完成！", `領航員，我們成功解析了 OCR 筆記：\n主題：${parsed.topic}\n解鎖了 ${parsed.vocab.length} 個星際單字、${parsed.sentences.length} 句超維度語句！+50 XP 獎勵！`);
+            } catch (error) {
+                console.error("Local AI organization failed", error);
+                document.getElementById('scanStatus').innerText = "⚠️ 本地 AI 整理失敗，請檢查服務或 API key";
+                showModal("📡 通訊中斷", error.message);
+            } finally {
+                scanner.classList.remove('scanline');
+                document.getElementById('aiSpinner').classList.add('hidden');
+                document.getElementById('aiIcon').classList.remove('hidden');
+            }
+        }
+
+        // Custom Modal Controller
+        function showModal(title, content) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalContent').innerText = content;
+            const modal = document.getElementById('customModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100');
+        }
+
+        function closeModal() {
+            playSynthSound('click');
+            const modal = document.getElementById('customModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.classList.remove('opacity-100');
+        }
+
+        // Load First View
+        window.onload = async function() {
+            loadNotesFromStorage();
+            renderNotesList();
+            renderCurrentNote();
+            updateNoteMetadataBadges(selectedNoteIndex);
+            updateXPUI();
+            await initCloudAuth();
+        }
+    </script>
+</body>
+</html>

@@ -277,7 +277,7 @@
                             清空文字
                         </button>
                     </div>
-                    <textarea id="ocrText" class="w-full min-h-28 bg-slate-900/80 border border-slate-800 focus:border-cyan-500 text-slate-200 text-xs px-3 py-2 rounded-lg focus:outline-none" placeholder="按「辨識截圖文字」後，多張圖片的 OCR 文字會出現在這裡；你也可以直接貼上課堂 OCR 文字再按 AI 整理。"></textarea>
+                    <textarea id="ocrText" oninput="handleOCRTextInput(this.value)" class="w-full min-h-28 bg-slate-900/80 border border-slate-800 focus:border-cyan-500 text-slate-200 text-xs px-3 py-2 rounded-lg focus:outline-none" placeholder="按「辨識截圖文字」後，多張圖片的 OCR 文字會出現在這裡；你也可以直接貼上課堂 OCR 文字再按 AI 整理。"></textarea>
                 </div>
 
                 <!-- Action Button Panels -->
@@ -292,7 +292,7 @@
                             整理成週筆記
                         </button>
                         <!-- AI processing trigger (The most game-like!) -->
-                        <button onclick="triggerAIScan()" class="relative overflow-hidden flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:to-indigo-500 text-slate-100 font-bold text-xs transition-all shadow-[0_0_15px_rgba(217,70,239,0.4)] group">
+                        <button id="aiOrganizeButton" type="button" onclick="triggerAIScan()" class="relative overflow-hidden flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:to-indigo-500 disabled:opacity-60 disabled:cursor-wait text-slate-100 font-bold text-xs transition-all shadow-[0_0_15px_rgba(217,70,239,0.4)] group">
                             <!-- Button laser glow effect -->
                             <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <svg class="w-3.5 h-3.5 animate-spin hidden" id="aiSpinner" fill="none" viewBox="0 0 24 24">
@@ -439,6 +439,58 @@
         let isLoadingCloudNotes = false;
         let hasLocalSavedNotes = false;
         let authCooldownTimer = null;
+        let isAIOrganizing = false;
+        const IMAGE_DRAFT_DB = "spanish-space-image-drafts";
+        const IMAGE_DRAFT_STORE = "drafts";
+        const IMAGE_DRAFT_KEY = "current-upload";
+
+        function openImageDraftDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(IMAGE_DRAFT_DB, 1);
+                request.onupgradeneeded = () => {
+                    if (!request.result.objectStoreNames.contains(IMAGE_DRAFT_STORE)) {
+                        request.result.createObjectStore(IMAGE_DRAFT_STORE);
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveUploadedImageDraft() {
+            try {
+                const database = await openImageDraftDatabase();
+                const transaction = database.transaction(IMAGE_DRAFT_STORE, "readwrite");
+                transaction.objectStore(IMAGE_DRAFT_STORE).put(uploadedImages, IMAGE_DRAFT_KEY);
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                });
+                database.close();
+            } catch (error) {
+                console.warn("Unable to save uploaded image draft.", error);
+            }
+        }
+
+        async function restoreUploadedImageDraft() {
+            try {
+                const database = await openImageDraftDatabase();
+                const transaction = database.transaction(IMAGE_DRAFT_STORE, "readonly");
+                const request = transaction.objectStore(IMAGE_DRAFT_STORE).get(IMAGE_DRAFT_KEY);
+                const images = await new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+                database.close();
+                if (Array.isArray(images) && images.length > 0) {
+                    uploadedImages = images;
+                    currentUploadedImageBase64 = images.at(-1)?.dataUrl || null;
+                    renderUploadedImages();
+                }
+            } catch (error) {
+                console.warn("Unable to restore uploaded image draft.", error);
+            }
+        }
 
         // Custom Sound Generator using Web Audio API (Retro Synth SFX)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -843,7 +895,11 @@
                 return;
             }
 
-            notesData[targetIndex] = noteFromRow(result.data);
+            const savedNote = noteFromRow(result.data);
+            notesData[targetIndex] = {
+                ...notesData[targetIndex],
+                id: savedNote.id
+            };
             saveNotesToStorage({ cloud: false });
             renderNotesList();
             if (targetIndex === selectedNoteIndex) renderCurrentNote();
@@ -976,8 +1032,10 @@
             // Header input
             document.getElementById('noteNameInput').value = note.name;
             renderTopicChips(note.topic);
-            latestOCRText = note.rawOCRText || "";
             const ocrTextArea = document.getElementById('ocrText');
+            if (!isAIOrganizing) {
+                latestOCRText = note.rawOCRText || "";
+            }
             if (ocrTextArea) ocrTextArea.value = latestOCRText;
 
             // Render Vocabulary
@@ -1240,20 +1298,31 @@
             uploadedImages.splice(index, 1);
             currentUploadedImageBase64 = uploadedImages.at(-1)?.dataUrl || null;
             renderUploadedImages();
+            saveUploadedImageDraft();
         }
 
         function clearUploadedImages() {
             uploadedImages = [];
             currentUploadedImageBase64 = null;
             renderUploadedImages();
+            saveUploadedImageDraft();
             playSynthSound('click');
         }
 
         function clearOCRText() {
-            latestOCRText = "";
             document.getElementById('ocrText').value = "";
+            handleOCRTextInput("");
             document.getElementById('scanStatus').innerText = "OCR 文字已清空。";
             playSynthSound('click');
+        }
+
+        function handleOCRTextInput(value) {
+            latestOCRText = String(value || "");
+            const note = notesData[selectedNoteIndex];
+            if (note) {
+                note.rawOCRText = latestOCRText;
+                saveNotesToStorage({ cloud: false });
+            }
         }
 
         function handleImageUpload(e) {
@@ -1273,6 +1342,7 @@
                     loadedCount += 1;
                     if (loadedCount === files.length) {
                         renderUploadedImages();
+                        saveUploadedImageDraft();
                         document.getElementById('quest2').checked = true;
                         document.getElementById('scanStatus').innerText = `已裝載 ${uploadedImages.length} 張截圖。`;
                         addXP(20);
@@ -1351,6 +1421,7 @@
 
                 latestOCRText = chunks.join('\n\n').trim();
                 document.getElementById('ocrText').value = latestOCRText;
+                handleOCRTextInput(latestOCRText);
                 document.getElementById('scanStatus').innerText = `✓ OCR 完成：已解析 ${uploadedImages.length} 張截圖，${latestOCRText.length} 個字元。`;
                 addXP(10);
             } catch (error) {
@@ -1404,9 +1475,17 @@
 
         // --- LOCAL AI ORGANIZATION API ---
         async function triggerAIScan() {
+            if (isAIOrganizing) return;
+
             const scanner = document.getElementById('scannerContainer');
+            const aiButton = document.getElementById('aiOrganizeButton');
+            const requestedNote = notesData[selectedNoteIndex];
+            const requestedNoteId = requestedNote?.id || null;
+            const requestedNoteIndex = selectedNoteIndex;
 
             // Start visual & audio scanning sequence
+            isAIOrganizing = true;
+            aiButton.disabled = true;
             playSynthSound('scan');
             scanner.classList.add('scanline');
             document.getElementById('aiSpinner').classList.remove('hidden');
@@ -1422,6 +1501,10 @@
                 if (!ocrText) {
                     throw new Error("請先完成 OCR，或在 OCR 文字暫存艙貼上課堂文字。");
                 }
+
+                latestOCRText = ocrText;
+                if (requestedNote) requestedNote.rawOCRText = ocrText;
+                saveNotesToStorage({ cloud: false });
 
                 const { data: sessionData } = await supabaseClient.auth.getSession();
                 const accessToken = sessionData.session?.access_token;
@@ -1444,15 +1527,21 @@
                 }
 
                 const parsed = normalizeOrganizedPayload(payload);
-                const note = notesData[selectedNoteIndex];
+                const targetIndex = requestedNoteId
+                    ? notesData.findIndex(note => note.id === requestedNoteId)
+                    : Math.min(requestedNoteIndex, notesData.length - 1);
+                const note = notesData[targetIndex];
+                if (!note) {
+                    throw new Error("找不到原本要整理的筆記，請重新開啟後再試一次。");
+                }
                 note.topic = parsed.topic;
                 note.vocab = parsed.vocab;
                 note.sentences = parsed.sentences;
                 note.grammar = parsed.grammar;
                 note.rawOCRText = ocrText;
 
-                renderCurrentNote();
-                updateNoteMetadataBadges(selectedNoteIndex);
+                if (targetIndex === selectedNoteIndex) renderCurrentNote();
+                updateNoteMetadataBadges(targetIndex);
                 saveNotesToStorage();
                 addXP(50);
 
@@ -1463,6 +1552,8 @@
                 document.getElementById('scanStatus').innerText = "⚠️ 本地 AI 整理失敗，請檢查服務或 API key";
                 showModal("📡 通訊中斷", error.message);
             } finally {
+                isAIOrganizing = false;
+                aiButton.disabled = false;
                 scanner.classList.remove('scanline');
                 document.getElementById('aiSpinner').classList.add('hidden');
                 document.getElementById('aiIcon').classList.remove('hidden');
@@ -1490,6 +1581,7 @@
             loadNotesFromStorage();
             renderNotesList();
             renderCurrentNote();
+            await restoreUploadedImageDraft();
             updateNoteMetadataBadges(selectedNoteIndex);
             updateXPUI();
             await initCloudAuth();
